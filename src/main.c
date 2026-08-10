@@ -16,13 +16,19 @@ int main() {
     // hard coding reset vectors
     cpu.mem[0xFFFC] = 0x80;
     cpu.mem[0xFFFD] = 0x00;
+    
+    // LDA ($67),Y
+    cpu.mem[0x0080] = 0xB1;
+    cpu.mem[0x0081] = 0x67;
+    
+    cpu.y = 0x42;
+    cpu.mem[0x67] = 0x69;
+    cpu.mem[0x69 + 0x42] = 0xFF;
 
-    // LDA #67
-    cpu.mem[0x0080] = 0xA9;
-    cpu.mem[0x0081] = 0xFF;
+
 
     cpu_reset(&cpu);
-
+    
     instruction_t ins = instruction_init(cpu.mem[cpu.pc]);
     ins.execute(&cpu);
 
