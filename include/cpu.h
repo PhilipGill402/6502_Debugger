@@ -26,6 +26,13 @@
 #define SET_NEGATIVE(status) status = status | 1 << 6
 #define CLEAR_NEGATIVE(status) status = status & ~(1 << 6)
 
+#define CARRY       1 << 0
+#define ZERO        1 << 2
+#define INTERRUPT   1 << 3
+#define DECIMAL     1 << 4
+#define BREAK       1 << 5
+#define NEGATIVE    1 << 6
+
 typedef struct {
     // registers
     uint16_t pc;
