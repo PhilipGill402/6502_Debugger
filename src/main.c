@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "helpers.h"
 #include "cpu.h"
 #include "instructions/instructions.h"
 
@@ -14,23 +15,23 @@ int main() {
         return -1;
     
     // hard coding reset vectors
-    cpu.mem[0xFFFC] = 0x80;
-    cpu.mem[0xFFFD] = 0x00;
+    write8(&cpu, 0xFFFC, 0x80);
+    write8(&cpu, 0xFFFD, 0x00);
     
     // LDA ($67),Y
-    cpu.mem[0x0080] = 0xB1;
-    cpu.mem[0x0081] = 0x67;
+    write8(&cpu, 0x0080, 0xB1);
+    write8(&cpu, 0x0081, 0x67);
     
     cpu.y = 0x42;
-    cpu.mem[0x67] = 0x69;
-    cpu.mem[0x69 + 0x42] = 0xFF;
+    write8(&cpu, 0x67, 0x69);
+    write8(&cpu, 0x69 + 0x42, 0xFF);
 
 
 
     cpu_reset(&cpu);
     
     instruction_t ins = instruction_init(cpu.mem[cpu.pc]);
-    ins.execute(&cpu);
+    ins.execute(&ins, &cpu);
 
     printf("%x\n", cpu.a);
     print_binary(cpu.status);
