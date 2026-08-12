@@ -19,21 +19,18 @@ int main() {
     write8(&cpu, 0xFFFD, 0x00);
     
     // LDA ($67),Y
-    write8(&cpu, 0x0080, 0xB1);
-    write8(&cpu, 0x0081, 0x67);
-    
-    cpu.y = 0x42;
-    write8(&cpu, 0x67, 0x69);
-    write8(&cpu, 0x69 + 0x42, 0xFF);
+    write8(&cpu, 0x0080, 0xAE);
+    write8(&cpu, 0x0081, 0xFF);
+    write8(&cpu, 0x0082, 0x01);
 
-
+    write8(&cpu, 0x01FF, 0x67);
 
     cpu_reset(&cpu);
     
     instruction_t ins = instruction_init(cpu.mem[cpu.pc]);
     ins.execute(&ins, &cpu);
 
-    printf("%x\n", cpu.a);
+    printf("%x\n", cpu.x);
     print_binary(cpu.status);
 
     cpu_free(&cpu);
