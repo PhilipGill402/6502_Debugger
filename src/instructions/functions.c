@@ -3,7 +3,40 @@
 
 #include <stdio.h>
 
-void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint8_t value = get_value(cpu, mode);
+    uint8_t carry = (cpu->status & CARRY) ? 1 : 0;
+    
+    uint8_t pre_add = cpu->a;
+    uint16_t sum = cpu->a + value + carry;
+    uint8_t result = (uint8_t)sum;
+
+    cpu->a = result;
+
+    if (cpu->a == 0)
+        SET_ZERO(cpu->status);
+    else
+        CLEAR_ZERO(cpu->status);
+
+    if (cpu->a & (1 << 7))
+        SET_NEGATIVE(cpu->status);
+    else
+        CLEAR_NEGATIVE(cpu->status);
+
+    if (sum > 0xFF)
+        SET_CARRY(cpu->status);
+    else
+        CLEAR_CARRY(cpu->status);
+
+    if ((~(pre_add ^ value) & (pre_add ^ result) & (1 << 7)) != 0)
+        SET_OVERFLOW(cpu->status);
+    else
+        CLEAR_OVERFLOW(cpu->status);
+}
+
 void and(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
 void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
 
@@ -47,9 +80,13 @@ void lda(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     if (cpu->a == 0)
         SET_ZERO(cpu->status);
+    else
+        CLEAR_ZERO(cpu->status);
 
     if (cpu->a & (1 << 7))
         SET_NEGATIVE(cpu->status);
+    else
+        CLEAR_NEGATIVE(cpu->status);
 }
 
 void ldx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -60,9 +97,13 @@ void ldx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     if (cpu->x == 0)
         SET_ZERO(cpu->status);
+    else
+        CLEAR_ZERO(cpu->status);
 
     if (cpu->x & (1 << 7))
         SET_NEGATIVE(cpu->status);
+    else
+        CLEAR_NEGATIVE(cpu->status);
 }
 
 void ldy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -73,9 +114,13 @@ void ldy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     if (cpu->y == 0)
         SET_ZERO(cpu->status);
+    else
+        CLEAR_ZERO(cpu->status);
 
     if (cpu->y & (1 << 7))
         SET_NEGATIVE(cpu->status);
+    else
+        CLEAR_NEGATIVE(cpu->status);
 }
 
 void lsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -98,12 +143,21 @@ void lsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     
     if (!postshift)
         SET_ZERO(cpu->status);
+    else
+        CLEAR_ZERO(cpu->status);
 
     if (postshift & (1 << 7))
         SET_NEGATIVE(cpu->status);
+    else
+        CLEAR_NEGATIVE(cpu->status);
 }
 
-void nop(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void nop(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    (void)mode;
+
+    cpu->pc++;
+}
 
 void ora(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
 
