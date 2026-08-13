@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "instructions/lda.h"
 #include "instructions/ldx.h"
+#include "instructions/ldy.h"
 
 instruction_t instruction_init(uint8_t opcode) {
     instruction_t ins = { 0 }; 
@@ -62,6 +63,26 @@ instruction_t instruction_init(uint8_t opcode) {
         case 0xBE: {
             // cycles could change to 5
             REGISTER_INSTRUCTION(ins, 0xBE, 3, 4, ldx_absolute_y);
+        }
+        case 0xA0: {
+            REGISTER_INSTRUCTION(ins, 0xA0, 2, 3, ldy_immediate);
+            return ins;
+        }
+        case 0xA4: {
+            REGISTER_INSTRUCTION(ins, 0xA4, 2, 3, ldy_zero_page); 
+            return ins;
+        }
+        case 0xB4: {
+            REGISTER_INSTRUCTION(ins, 0xB4, 2, 4, ldy_zero_page_x);
+            return ins;
+        }
+        case 0xAC: {
+            REGISTER_INSTRUCTION(ins, 0xAC, 3, 4, ldy_absolute);
+            return ins;
+        }
+        case 0xBC: {
+            // cycles could change to 5
+            REGISTER_INSTRUCTION(ins, 0xBC, 3, 4, ldy_absolute_x);
         }
         default: {
             fprintf(stderr, "Opcode (%x) not supported\n", opcode);
