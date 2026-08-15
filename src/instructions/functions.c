@@ -15,30 +15,49 @@ void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     uint8_t result = (uint8_t)sum;
 
     cpu->a = result;
-
-    if (cpu->a == 0)
-        SET_ZERO(cpu->status);
-    else
-        CLEAR_ZERO(cpu->status);
-
-    if (cpu->a & (1 << 7))
-        SET_NEGATIVE(cpu->status);
-    else
-        CLEAR_NEGATIVE(cpu->status);
-
-    if (sum > 0xFF)
-        SET_CARRY(cpu->status);
-    else
-        CLEAR_CARRY(cpu->status);
-
-    if ((~(pre_add ^ value) & (pre_add ^ result) & (1 << 7)) != 0)
-        SET_OVERFLOW(cpu->status);
-    else
-        CLEAR_OVERFLOW(cpu->status);
+    
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+    set_flag(cpu, CARRY, sum > 0xFF);     
+    set_flag(cpu, OVERFLOW, (~(pre_add ^ value) & (pre_add ^ result) & (1 << 7)) != 0); 
 }
 
-void and(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void and(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint8_t value = get_value(cpu, mode);
+    cpu->a = cpu->a & value;
+
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+}
+void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    uint8_t value;
+    uint16_t addr;
+
+    if (mode == ADDRESS_ACCUMULATOR) {
+        value = cpu->a;
+    } else {
+        addr = get_effective_address(cpu, mode);
+        value = read8(cpu, addr);
+    }
+    
+    uint8_t new_value = value << 1;
+    uint8_t carry = (value & CARRY) ? 1 : 0;
+
+    if (mode == ADDRESS_ACCUMULATOR)
+        cpu->a = new_value;
+    else
+        write8(cpu, addr, new_value);
+
+    set_flag(cpu, CARRY, carry); 
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, new_value & (1 << 7));
+}
 
 void bcc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
 void bcs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
@@ -78,15 +97,8 @@ void lda(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     
     cpu->a = get_value(cpu, mode);
 
-    if (cpu->a == 0)
-        SET_ZERO(cpu->status);
-    else
-        CLEAR_ZERO(cpu->status);
-
-    if (cpu->a & (1 << 7))
-        SET_NEGATIVE(cpu->status);
-    else
-        CLEAR_NEGATIVE(cpu->status);
+    set_flag(cpu, ZERO, cpu->a == 0); 
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
 }
 
 void ldx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -95,15 +107,8 @@ void ldx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     
     cpu->x = get_value(cpu, mode);
 
-    if (cpu->x == 0)
-        SET_ZERO(cpu->status);
-    else
-        CLEAR_ZERO(cpu->status);
-
-    if (cpu->x & (1 << 7))
-        SET_NEGATIVE(cpu->status);
-    else
-        CLEAR_NEGATIVE(cpu->status);
+    set_flag(cpu, ZERO, cpu->x == 0); 
+    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7));
 }
 
 void ldy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -112,15 +117,8 @@ void ldy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     cpu->x = get_value(cpu, mode);
 
-    if (cpu->y == 0)
-        SET_ZERO(cpu->status);
-    else
-        CLEAR_ZERO(cpu->status);
-
-    if (cpu->y & (1 << 7))
-        SET_NEGATIVE(cpu->status);
-    else
-        CLEAR_NEGATIVE(cpu->status);
+    set_flag(cpu, ZERO, cpu->y == 0); 
+    set_flag(cpu, NEGATIVE, cpu->y & (1 << 7));
 }
 
 void lsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -135,21 +133,10 @@ void lsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
         cpu->a = postshift;
     else
         write8(cpu, addr, postshift);
-
-    if (preshift & 0x0001)
-        SET_CARRY(cpu->status);
-    else
-        CLEAR_CARRY(cpu->status);
     
-    if (!postshift)
-        SET_ZERO(cpu->status);
-    else
-        CLEAR_ZERO(cpu->status);
-
-    if (postshift & (1 << 7))
-        SET_NEGATIVE(cpu->status);
-    else
-        CLEAR_NEGATIVE(cpu->status);
+    set_flag(cpu, CARRY, preshift & 0x0001);
+    set_flag(cpu, ZERO, !postshift);
+    set_flag(cpu, NEGATIVE, postshift & (1 << 7));    
 }
 
 void nop(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {

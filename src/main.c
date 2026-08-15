@@ -18,17 +18,18 @@ int main() {
     write8(&cpu, 0xFFFC, 0x80);
     write8(&cpu, 0xFFFD, 0x00);
     
-    write8(&cpu, 0x0080, 0x69);
-    write8(&cpu, 0x0081, 0xFF);
+    write8(&cpu, 0x0080, 0x29);
+    write8(&cpu, 0x0081, 0xab);
+    cpu.a = 0x01;
     
     write8(&cpu, 0x0067, 0x69);
     
     cpu_reset(&cpu);
     
-    cpu.a = 0x01;
     instruction_t ins = instruction_init(cpu.mem[cpu.pc]);
     ins.execute(&ins, &cpu, ins.mode);
     
+    print_binary(cpu.a);
     printf("%x\n", cpu.a);
     print_binary(cpu.status);
 
