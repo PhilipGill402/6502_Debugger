@@ -32,6 +32,7 @@ void and(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     set_flag(cpu, ZERO, cpu->a == 0);
     set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
 }
+
 void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     cpu->pc++;
@@ -59,37 +60,281 @@ void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     set_flag(cpu, NEGATIVE, new_value & (1 << 7));
 }
 
-void bcc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void bcs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void beq(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void bit(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void bmi(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void bne(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void bpl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void brk(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void bvc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void bvs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void bcc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // carry is not clear
+    if (test_flag(cpu, CARRY))
+        return;
 
-void clc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void cld(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void cli(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void clv(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void cmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void cpx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void cpy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
 
-void dec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void dex(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void dey(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void bcs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // carry is clear
+    if (!test_flag(cpu, CARRY))
+        return;
 
-void eor(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
 
-void inc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void inx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void iny(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void beq(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // zero is not clear
+    if (test_flag(cpu, ZERO))
+        return;
 
-void jmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void jsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
+
+void bit(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint8_t value = get_value(cpu, mode);
+    uint8_t result = cpu->a & value;
+
+    set_flag(cpu, ZERO, result == 0);
+    set_flag(cpu, OVERFLOW, result & (1 << 6) != 0); // sets the overflow flag to bit 6 of the result
+    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0); // sets the negative flag to bit 7 of the result
+}
+
+void bmi(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // negative is clear
+    if (!test_flag(cpu, NEGATIVE))
+        return;
+
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
+
+void bne(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // zero is not clear
+    if (test_flag(cpu, ZERO))
+        return;
+
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
+
+void bpl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // negative is not clear
+    if (test_flag(cpu, NEGATIVE))
+        return;
+
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
+
+void brk(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    set_flag(cpu, BREAK, 1); 
+
+    push8(cpu, cpu->pc);
+    push8(cpu, cpu->status);
+
+    cpu->pc = read16(cpu, INTERRUPT_VECTOR);
+}
+
+void bvc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // overflow is not clear
+    if (test_flag(cpu, OVERFLOW))
+        return;
+
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
+
+void bvs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    // overflow is clear
+    if (!test_flag(cpu, OVERFLOW))
+        return;
+
+    uint8_t offset = get_value(cpu, mode);
+    cpu->pc += offset;
+}
+
+void clc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    set_flag(cpu, CARRY, 0);
+}
+
+void cld(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    set_flag(cpu, DECIMAL, 0);
+}
+void cli(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    set_flag(cpu, INTERRUPT, 0);
+}
+
+void clv(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    set_flag(cpu, OVERFLOW, 0);
+}
+
+void cmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    uint8_t value = get_value(cpu, mode);
+
+    set_flag(cpu, CARRY, cpu->a >= value);
+    set_flag(cpu, ZERO, cpu->a == value);
+    set_flag(cpu, NEGATIVE, (cpu->a - value) & (1 << 7) != 0);
+}
+
+void cpx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    uint8_t value = get_value(cpu, mode);
+
+    set_flag(cpu, CARRY, cpu->x >= value);
+    set_flag(cpu, ZERO, cpu->x == value);
+    set_flag(cpu, NEGATIVE, (cpu->x - value) & (1 << 7) != 0);
+}
+
+void cpy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    uint8_t value = get_value(cpu, mode);
+
+    set_flag(cpu, CARRY, cpu->y >= value);
+    set_flag(cpu, ZERO, cpu->y == value);
+    set_flag(cpu, NEGATIVE, (cpu->y - value) & (1 << 7) != 0);
+}
+
+void dec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    uint16_t addr = get_effective_address(cpu, mode);
+    uint8_t result = read8(cpu, addr) - 1;
+    write8(cpu, addr, result);
+
+    set_flag(cpu, ZERO, result == 0);
+    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+}
+
+void dex(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->x--;
+
+    set_flag(cpu, ZERO, cpu->x == 0);
+    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+}
+
+void dey(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->y--;
+
+    set_flag(cpu, ZERO, cpu->y == 0);
+    set_flag(cpu, NEGATIVE, cpu->y & (1 << 7) != 0);
+}
+
+void eor(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    uint16_t addr = get_effective_address(cpu, mode);
+    uint8_t value;
+
+    if (mode == ADDRESS_IMMEDIATE)
+        value = read8(cpu, cpu->pc++);
+    else
+        value = read8(cpu, addr);
+
+    uint8_t result = cpu->a ^ value;
+    cpu->a = result;
+
+    set_flag(cpu, ZERO, result == 0);
+    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+}
+
+void inc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    uint16_t addr = get_effective_address(cpu, mode);
+    uint8_t result = read8(cpu, addr) + 1;
+    write8(cpu, addr, result);
+
+    set_flag(cpu, ZERO, result == 0);
+    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+}
+
+void inx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->x++;
+
+    set_flag(cpu, ZERO, cpu->x == 0);
+    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+}
+
+void iny(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->y++;
+
+    set_flag(cpu, ZERO, cpu->y == 0);
+    set_flag(cpu, NEGATIVE, cpu->y & (1 << 7) != 0);
+}
+
+void jmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->pc = get_effective_address(cpu, mode);
+}
+
+void jsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+    
+    push16(cpu->pc);
+
+    cpu->pc = get_effective_address(cpu, mode);
+}
 
 void lda(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
@@ -146,12 +391,50 @@ void nop(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->pc++;
 }
 
-void ora(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void ora(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
 
-void pha(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void php(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void pla(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void plp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+    uint8_t value = get_value(cpu, mode);
+    cpu->a = cpu->a | value;
+
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+}
+
+void pha(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    push8(cpu, cpu->a);
+}
+
+void php(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    push8(cpu, cpu->status);
+}
+
+void pla(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->a = pull8(cpu);
+
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7) != 0);
+}
+
+void plp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->status = pull8(cpu);
+
+    set_flag(cpu, ZERO, cpu->status == 0);
+    set_flag(cpu, NEGATIVE, cpu->status & (1 << 7) != 0);
+}
 
 void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
 void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}

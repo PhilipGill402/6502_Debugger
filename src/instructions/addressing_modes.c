@@ -16,28 +16,28 @@ uint16_t get_effective_address(cpu_t* cpu, addressing_mode_t mode) {
             return read8(cpu, cpu->pc++);
         }
         case ADDRESS_ZERO_PAGE_X: {
-            return read8(cpu, cpu->pc++) + cpu->x;
+            return (uint8_t)(read8(cpu, cpu->pc++) + cpu->x);
         }
         case ADDRESS_ZERO_PAGE_Y: {
-            return read8(cpu, cpu->pc++) + cpu->y;
+            return (uint8_t)(read8(cpu, cpu->pc++) + cpu->y);
         }
         case ADDRESS_RELATIVE: {
             int8_t offset = (int8_t)read8(cpu, cpu->pc++);
             return cpu->pc + offset;
         }
         case ADDRESS_ABSOLUTE: {
-            uint16_t addr = read16(cpu, cpu->pc++);
-            cpu->pc++;
+            uint16_t addr = read16(cpu, cpu->pc);
+            cpu->pc += 2;
             return addr;
         }
         case ADDRESS_ABSOLUTE_X: {
-            uint16_t addr = read16(cpu, cpu->pc++) + cpu->x;
-            cpu->pc++;
+            uint16_t addr = read16(cpu, cpu->pc) + cpu->x;
+            cpu->pc += 2;
             return addr;
         }
         case ADDRESS_ABSOLUTE_Y: {
-            uint16_t addr = read16(cpu, cpu->pc++) + cpu->y;
-            cpu->pc++;
+            uint16_t addr = read16(cpu, cpu->pc) + cpu->y;
+            cpu->pc += 2;
             return addr;
         }
         case ADDRESS_INDIRECT: {
@@ -51,7 +51,7 @@ uint16_t get_effective_address(cpu_t* cpu, addressing_mode_t mode) {
         }
         case ADDRESS_INDIRECT_INDEXED: {
             uint8_t indirect_addr = read8(cpu, cpu->pc++);
-            return read16(cpu, indirect_addr) + cpu->y;
+            return (uint8_t)(read16(cpu, indirect_addr) + cpu->y);
         }
     }
 }
@@ -115,3 +115,4 @@ uint8_t get_value(cpu_t* cpu, addressing_mode_t mode) {
         }
     }
 }
+

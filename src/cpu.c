@@ -25,8 +25,8 @@ void cpu_free(cpu_t* cpu) {
 }
 
 void cpu_reset(cpu_t* cpu) {
-    uint8_t low = cpu->mem[0xFFFC]; 
-    uint8_t high = cpu->mem[0xFFFD];
+    uint8_t low = cpu->mem[RESET_VECTOR]; 
+    uint8_t high = cpu->mem[RESET_VECTOR + 1];
 
     cpu->pc = (high << 8) | low;
     return;

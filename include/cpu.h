@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 
-#define MEM_SIZE 65536
+#define MEM_SIZE            65536
+#define STACK_START         0x0100
+#define INTERRUPT_VECTOR    0xFFFE
+#define RESET_VECTOR        0xFFFC
 
 #define CARRY       1 << 1
 #define ZERO        1 << 2
@@ -31,6 +34,10 @@ static inline void set_flag(cpu_t* cpu, uint8_t flag, uint8_t value) {
         cpu->status |= flag;
     else
         cpu->status &= ~flag;
+}
+
+static inline uint8_t test_flag(cpu_t* cpu, uint8_t flag) {
+    return cpu->status & flag;
 }
 
 cpu_t cpu_init();
