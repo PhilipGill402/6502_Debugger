@@ -436,23 +436,194 @@ void plp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     set_flag(cpu, NEGATIVE, cpu->status & (1 << 7) != 0);
 }
 
-void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void rti(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void rts(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
 
-void sbc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void sec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void sed(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void sei(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void sta(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void stx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void sty(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+    uint16_t addr = get_effective_address(cpu, mode);
+    uint8_t value;
 
-void tax(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void tay(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void tsx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void txa(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void txs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
-void tya(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {}
+    if (mode == ADDRESS_ACCUMULATOR)
+        value = cpu->a;
+    else
+        value = read8(cpu, addr);
+
+    uint8_t result = (value << 1) | test_flag(cpu, CARRY);
+
+    if (mode == ADDRESS_ACCUMULATOR)
+        cpu->a = result;
+    else
+        write8(cpu, addr, result);
+
+    set_flag(cpu, CARRY, value & (1 << 7) != 0);
+    set_flag(cpu, ZERO, result == 0);
+    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+}
+
+void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint16_t addr = get_effective_address(cpu, mode);
+    uint8_t value;
+
+    if (mode == ADDRESS_ACCUMULATOR)
+        value = cpu->a;
+    else
+        value = read8(cpu, addr);
+
+    uint8_t result = (value >> 1) | test_flag(cpu, CARRY);
+
+    if (mode == ADDRESS_ACCUMULATOR)
+        cpu->a = result;
+    else
+        write8(cpu, addr, result);
+
+    set_flag(cpu, CARRY, value & (1 << 7) != 0);
+    set_flag(cpu, ZERO, result == 0);
+    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+}
+
+void rti(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint8_t status = pull8(cpu);
+    uint16_t pc = pull16(cpu);
+
+    cpu->status = status;
+    cpu->pc = pc;
+}
+
+void rts(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint8_t status = pull8(cpu);
+    uint16_t pc = pull16(cpu) - 1;
+
+    cpu->status = status;
+    cpu->pc = pc;
+}
+
+void sbc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint8_t value = get_value(cpu, mode);
+    uint8_t borrow = test_flag(cpu, CARRY) ? 0: 1;
+    
+    uint8_t pre_sub = cpu->a;
+    uint16_t diff = (uint16_t)cpu->a - value - borrow;
+    uint8_t result = (uint8_t)diff;
+
+    cpu->a = result;
+    
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+    set_flag(cpu, CARRY, pre_sub >= value + borrow);     
+    set_flag(cpu, OVERFLOW, ((pre_sub ^ result) & (pre_sub ^ value) & (1 << 7)) != 0);
+}
+
+void sec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    set_flag(cpu, CARRY, 1);
+}
+
+void sed(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    set_flag(cpu, DECIMAL, 1);
+}
+
+void sei(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    set_flag(cpu, INTERRUPT, 1);
+}
+
+void sta(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint16_t addr = get_effective_address(cpu, mode);
+    write8(cpu, addr, cpu->a);
+}
+
+void stx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint16_t addr = get_effective_address(cpu, mode);
+    write8(cpu, addr, cpu->x);
+}
+
+void sty(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    uint16_t addr = get_effective_address(cpu, mode);
+    write8(cpu, addr, cpu->y);
+}
+
+void tax(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->x = cpu->a;
+
+    set_flag(cpu, ZERO, cpu->x == 0);
+    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+}
+
+void tay(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->y = cpu->a;
+
+    set_flag(cpu, ZERO, cpu->y == 0);
+    set_flag(cpu, NEGATIVE, cpu->y & (1 << 7) != 0);
+}
+
+void tsx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->x = cpu->sp;
+
+    set_flag(cpu, ZERO, cpu->x == 0);
+    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+}
+
+void txa(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->a = cpu->x;
+
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7) != 0);
+}
+
+void txs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->sp = cpu->x;
+}
+
+void tya(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
+    (void)self;
+    cpu->pc++;
+
+    cpu->a = cpu->y;
+
+    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7) != 0);
+}
 

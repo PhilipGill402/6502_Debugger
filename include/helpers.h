@@ -33,4 +33,11 @@ static inline uint8_t pull8(cpu_t* cpu) {
     return cpu->mem[STACK_START + cpu->sp];
 }
 
+static inline uint16_t pull16(cpu_t* cpu) {
+    uint8_t low = pull8(cpu);
+    uint8_t high = pull8(cpu);
+
+    return ((uint16_t)high << 8) | low;
+}
+
 #endif
