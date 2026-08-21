@@ -11,11 +11,16 @@ static inline uint8_t read8(cpu_t* cpu, uint16_t addr) {
 }
 
 static inline uint16_t read16(cpu_t* cpu, uint16_t addr) {
-    return (cpu->mem[addr + 1] << 8) | cpu->mem[addr];
+    return (cpu->mem[(uint16_t)(addr + 1)] << 8) | cpu->mem[addr];
 }
 
 static inline void write8(cpu_t* cpu, uint16_t addr, uint8_t value) {
     cpu->mem[addr] = value;
+}
+
+static inline void write16(cpu_t* cpu, uint16_t addr, uint16_t value) {
+    cpu->mem[addr] = (uint8_t)value;
+    cpu->mem[(uint16_t)(addr+1)] = (uint8_t)(value >> 8);
 }
 
 static inline void push8(cpu_t* cpu, uint8_t value) {

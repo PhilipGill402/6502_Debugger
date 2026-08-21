@@ -68,7 +68,8 @@ uint8_t get_value(cpu_t* cpu, addressing_mode_t mode) {
             return cpu->a;
         }
         case ADDRESS_ZERO_PAGE: {
-            return read8(cpu, cpu->pc++);
+            uint8_t addr = read8(cpu, cpu->pc++);
+            return read8(cpu, addr);
         }
         case ADDRESS_ZERO_PAGE_X: {
             uint8_t addr = read8(cpu, cpu->pc++) + cpu->x;

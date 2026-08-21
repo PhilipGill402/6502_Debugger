@@ -17,7 +17,7 @@ void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = result;
     
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+    set_flag(cpu, NEGATIVE, (cpu->a & (1 << 7)) != 0);
     set_flag(cpu, CARRY, sum > 0xFF);     
     set_flag(cpu, OVERFLOW, (~(pre_add ^ value) & (pre_add ^ result) & (1 << 7)) != 0); 
 }
@@ -30,7 +30,7 @@ void and(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = cpu->a & value;
 
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+    set_flag(cpu, NEGATIVE, (cpu->a & (1 << 7)) != 0);
 }
 
 void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -57,7 +57,7 @@ void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     set_flag(cpu, CARRY, carry); 
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, new_value & (1 << 7));
+    set_flag(cpu, NEGATIVE, (new_value & (1 << 7)) != 0);
 }
 
 void bcc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -104,8 +104,8 @@ void bit(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     uint8_t result = cpu->a & value;
 
     set_flag(cpu, ZERO, result == 0);
-    set_flag(cpu, OVERFLOW, result & (1 << 6) != 0); // sets the overflow flag to bit 6 of the result
-    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0); // sets the negative flag to bit 7 of the result
+    set_flag(cpu, OVERFLOW, (result & (1 << 6)) != 0); // sets the overflow flag to bit 6 of the result
+    set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0); // sets the negative flag to bit 7 of the result
 }
 
 void bmi(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -212,7 +212,7 @@ void cmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     set_flag(cpu, CARRY, cpu->a >= value);
     set_flag(cpu, ZERO, cpu->a == value);
-    set_flag(cpu, NEGATIVE, (cpu->a - value) & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, ((cpu->a - value) & (1 << 7)) != 0);
 }
 
 void cpx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -223,7 +223,7 @@ void cpx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     set_flag(cpu, CARRY, cpu->x >= value);
     set_flag(cpu, ZERO, cpu->x == value);
-    set_flag(cpu, NEGATIVE, (cpu->x - value) & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, ((cpu->x - value) & (1 << 7)) != 0);
 }
 
 void cpy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -234,7 +234,7 @@ void cpy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     set_flag(cpu, CARRY, cpu->y >= value);
     set_flag(cpu, ZERO, cpu->y == value);
-    set_flag(cpu, NEGATIVE, (cpu->y - value) & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, ((cpu->y - value) & (1 << 7)) != 0);
 }
 
 void dec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -246,7 +246,7 @@ void dec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     write8(cpu, addr, result);
 
     set_flag(cpu, ZERO, result == 0);
-    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0);
 }
 
 void dex(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -256,7 +256,7 @@ void dex(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->x--;
 
     set_flag(cpu, ZERO, cpu->x == 0);
-    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->x & (1 << 7)) != 0);
 }
 
 void dey(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -266,7 +266,7 @@ void dey(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->y--;
 
     set_flag(cpu, ZERO, cpu->y == 0);
-    set_flag(cpu, NEGATIVE, cpu->y & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->y & (1 << 7)) != 0);
 }
 
 void eor(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -285,7 +285,7 @@ void eor(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = result;
 
     set_flag(cpu, ZERO, result == 0);
-    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0);
 }
 
 void inc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -297,7 +297,7 @@ void inc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     write8(cpu, addr, result);
 
     set_flag(cpu, ZERO, result == 0);
-    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0);
 }
 
 void inx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -307,7 +307,7 @@ void inx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->x++;
 
     set_flag(cpu, ZERO, cpu->x == 0);
-    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->x & (1 << 7)) != 0);
 }
 
 void iny(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -317,7 +317,7 @@ void iny(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->y++;
 
     set_flag(cpu, ZERO, cpu->y == 0);
-    set_flag(cpu, NEGATIVE, cpu->y & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->y & (1 << 7)) != 0);
 }
 
 void jmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -331,7 +331,7 @@ void jsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     cpu->pc++;
     
-    push16(cpu->pc);
+    push16(cpu, cpu->pc);
 
     cpu->pc = get_effective_address(cpu, mode);
 }
@@ -339,7 +339,7 @@ void jsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 void lda(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     cpu->pc++;
-    
+     
     cpu->a = get_value(cpu, mode);
 
     set_flag(cpu, ZERO, cpu->a == 0); 
@@ -399,7 +399,7 @@ void ora(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = cpu->a | value;
 
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+    set_flag(cpu, NEGATIVE, (cpu->a & (1 << 7)) != 0);
 }
 
 void pha(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -423,7 +423,7 @@ void pla(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = pull8(cpu);
 
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->a & (1 << 7)) != 0);
 }
 
 void plp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -433,7 +433,7 @@ void plp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->status = pull8(cpu);
 
     set_flag(cpu, ZERO, cpu->status == 0);
-    set_flag(cpu, NEGATIVE, cpu->status & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->status & (1 << 7)) != 0);
 }
 
 void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -455,9 +455,9 @@ void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     else
         write8(cpu, addr, result);
 
-    set_flag(cpu, CARRY, value & (1 << 7) != 0);
+    set_flag(cpu, CARRY, (value & (1 << 7)) != 0);
     set_flag(cpu, ZERO, result == 0);
-    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0);
 }
 
 void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -479,9 +479,9 @@ void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     else
         write8(cpu, addr, result);
 
-    set_flag(cpu, CARRY, value & (1 << 7) != 0);
+    set_flag(cpu, CARRY, (value & (1 << 7)) != 0);
     set_flag(cpu, ZERO, result == 0);
-    set_flag(cpu, NEGATIVE, result & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0);
 }
 
 void rti(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -520,7 +520,7 @@ void sbc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = result;
     
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7));
+    set_flag(cpu, NEGATIVE, (cpu->a & (1 << 7)) != 0);
     set_flag(cpu, CARRY, pre_sub >= value + borrow);     
     set_flag(cpu, OVERFLOW, ((pre_sub ^ result) & (pre_sub ^ value) & (1 << 7)) != 0);
 }
@@ -577,7 +577,7 @@ void tax(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->x = cpu->a;
 
     set_flag(cpu, ZERO, cpu->x == 0);
-    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->x & (1 << 7)) != 0);
 }
 
 void tay(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -587,7 +587,7 @@ void tay(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->y = cpu->a;
 
     set_flag(cpu, ZERO, cpu->y == 0);
-    set_flag(cpu, NEGATIVE, cpu->y & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->y & (1 << 7)) != 0);
 }
 
 void tsx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -597,7 +597,7 @@ void tsx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->x = cpu->sp;
 
     set_flag(cpu, ZERO, cpu->x == 0);
-    set_flag(cpu, NEGATIVE, cpu->x & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->x & (1 << 7)) != 0);
 }
 
 void txa(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -607,7 +607,7 @@ void txa(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = cpu->x;
 
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->a & (1 << 7)) != 0);
 }
 
 void txs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -624,6 +624,6 @@ void tya(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->a = cpu->y;
 
     set_flag(cpu, ZERO, cpu->a == 0);
-    set_flag(cpu, NEGATIVE, cpu->a & (1 << 7) != 0);
+    set_flag(cpu, NEGATIVE, (cpu->a & (1 << 7)) != 0);
 }
 
