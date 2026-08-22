@@ -3,6 +3,12 @@
 
 #include <stdio.h>
 
+static void print_binary(uint8_t val) {
+    for (int i = 7; i >= 0; --i)
+        printf("%d", (val >> i) & 1);
+    printf("\n");
+}
+
 void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     cpu->pc++;
@@ -48,15 +54,16 @@ void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     }
     
     uint8_t new_value = value << 1;
-    uint8_t carry = (value & CARRY) ? 1 : 0;
+    
+    uint8_t carry = ((value & (1 << 7)) != 0);
 
     if (mode == ADDRESS_ACCUMULATOR)
         cpu->a = new_value;
     else
         write8(cpu, addr, new_value);
-
+    
     set_flag(cpu, CARRY, carry); 
-    set_flag(cpu, ZERO, cpu->a == 0);
+    set_flag(cpu, ZERO, new_value == 0);
     set_flag(cpu, NEGATIVE, (new_value & (1 << 7)) != 0);
 }
 
@@ -65,10 +72,12 @@ void bcc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->pc++;
     
     // carry is not clear
-    if (test_flag(cpu, CARRY))
+    if (test_flag(cpu, CARRY)) {
+        cpu->pc++;
         return;
-
-    uint8_t offset = get_value(cpu, mode);
+    }
+    
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
@@ -77,10 +86,12 @@ void bcs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->pc++;
     
     // carry is clear
-    if (!test_flag(cpu, CARRY))
+    if (!test_flag(cpu, CARRY)) {
+        cpu->pc++;
         return;
+    }
 
-    uint8_t offset = get_value(cpu, mode);
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
@@ -88,11 +99,13 @@ void beq(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     cpu->pc++;
     
-    // zero is not clear
-    if (test_flag(cpu, ZERO))
+    // zero is clear 
+    if (!test_flag(cpu, ZERO)) {
+        cpu->pc++;
         return;
-
-    uint8_t offset = get_value(cpu, mode);
+    }
+    
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
@@ -102,10 +115,10 @@ void bit(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
     uint8_t value = get_value(cpu, mode);
     uint8_t result = cpu->a & value;
-
+    
     set_flag(cpu, ZERO, result == 0);
-    set_flag(cpu, OVERFLOW, (result & (1 << 6)) != 0); // sets the overflow flag to bit 6 of the result
-    set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0); // sets the negative flag to bit 7 of the result
+    set_flag(cpu, OVERFLOW, (value & (1 << 6)) != 0); // sets the overflow flag to bit 6 of the result
+    set_flag(cpu, NEGATIVE, (value & (1 << 7)) != 0); // sets the negative flag to bit 7 of the result
 }
 
 void bmi(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -116,7 +129,7 @@ void bmi(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     if (!test_flag(cpu, NEGATIVE))
         return;
 
-    uint8_t offset = get_value(cpu, mode);
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
@@ -128,7 +141,7 @@ void bne(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     if (test_flag(cpu, ZERO))
         return;
 
-    uint8_t offset = get_value(cpu, mode);
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
@@ -140,14 +153,14 @@ void bpl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     if (test_flag(cpu, NEGATIVE))
         return;
 
-    uint8_t offset = get_value(cpu, mode);
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
 void brk(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     set_flag(cpu, BREAK, 1); 
 
-    push8(cpu, cpu->pc);
+    push16(cpu, cpu->pc);
     push8(cpu, cpu->status);
 
     cpu->pc = read16(cpu, INTERRUPT_VECTOR);
@@ -161,7 +174,7 @@ void bvc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     if (test_flag(cpu, OVERFLOW))
         return;
 
-    uint8_t offset = get_value(cpu, mode);
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
@@ -173,7 +186,7 @@ void bvs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     if (!test_flag(cpu, OVERFLOW))
         return;
 
-    uint8_t offset = get_value(cpu, mode);
+    int8_t offset = (int8_t)get_value(cpu, mode);
     cpu->pc += offset;
 }
 
@@ -331,9 +344,10 @@ void jsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     cpu->pc++;
     
-    push16(cpu, cpu->pc);
+    uint16_t addr = get_effective_address(cpu, mode);
+    push16(cpu, cpu->pc - 1);
 
-    cpu->pc = get_effective_address(cpu, mode);
+    cpu->pc = addr;
 }
 
 void lda(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -371,7 +385,12 @@ void lsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->pc++;
     
     uint16_t addr = get_effective_address(cpu, mode);
-    uint8_t preshift = read8(cpu, addr);
+    uint8_t preshift;
+    if (mode == ADDRESS_ACCUMULATOR)
+        preshift = cpu->a;
+    else
+        preshift = read8(cpu, addr);
+    
     uint8_t postshift = preshift >> 1;
 
     if (mode == ADDRESS_ACCUMULATOR)
@@ -379,7 +398,7 @@ void lsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     else
         write8(cpu, addr, postshift);
     
-    set_flag(cpu, CARRY, preshift & 0x0001);
+    set_flag(cpu, CARRY, (preshift & (1 << 0)) != 0);
     set_flag(cpu, ZERO, !postshift);
     set_flag(cpu, NEGATIVE, postshift & (1 << 7));    
 }
@@ -431,9 +450,6 @@ void plp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->pc++;
 
     cpu->status = pull8(cpu);
-
-    set_flag(cpu, ZERO, cpu->status == 0);
-    set_flag(cpu, NEGATIVE, (cpu->status & (1 << 7)) != 0);
 }
 
 void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
@@ -448,7 +464,11 @@ void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     else
         value = read8(cpu, addr);
 
-    uint8_t result = (value << 1) | test_flag(cpu, CARRY);
+    uint8_t result = value << 1;
+    if (test_flag(cpu, CARRY))
+        result |= 1;
+    else
+        result &= 0;
 
     if (mode == ADDRESS_ACCUMULATOR)
         cpu->a = result;
@@ -472,14 +492,18 @@ void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     else
         value = read8(cpu, addr);
 
-    uint8_t result = (value >> 1) | test_flag(cpu, CARRY);
+    uint8_t result = value >> 1;
+    if (test_flag(cpu, CARRY))
+        result |= 1 << 7;
+    else
+        result &= 1 << 7;
 
     if (mode == ADDRESS_ACCUMULATOR)
         cpu->a = result;
     else
         write8(cpu, addr, result);
 
-    set_flag(cpu, CARRY, (value & (1 << 7)) != 0);
+    set_flag(cpu, CARRY, (value & (1 << 0)) != 0);
     set_flag(cpu, ZERO, result == 0);
     set_flag(cpu, NEGATIVE, (result & (1 << 7)) != 0);
 }
@@ -500,10 +524,10 @@ void rts(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     cpu->pc++;
 
     uint8_t status = pull8(cpu);
-    uint16_t pc = pull16(cpu) - 1;
+    uint16_t pc = pull16(cpu);
 
     cpu->status = status;
-    cpu->pc = pc;
+    cpu->pc = pc + 1;
 }
 
 void sbc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {

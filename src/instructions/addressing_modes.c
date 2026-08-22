@@ -80,12 +80,11 @@ uint8_t get_value(cpu_t* cpu, addressing_mode_t mode) {
             return read8(cpu, addr);
         }
         case ADDRESS_RELATIVE: {
-            int8_t offset = (int8_t)read8(cpu, cpu->pc++);
-            return read8(cpu, cpu->pc + offset);
+            return read8(cpu, cpu->pc++);
         }
         case ADDRESS_ABSOLUTE: {
-            uint16_t addr = read16(cpu, cpu->pc++);
-            cpu->pc++;
+            uint16_t addr = read16(cpu, cpu->pc);
+            cpu->pc += 2;
             return read8(cpu, addr);
         }
         case ADDRESS_ABSOLUTE_X: {
@@ -99,8 +98,8 @@ uint8_t get_value(cpu_t* cpu, addressing_mode_t mode) {
             return read8(cpu, addr);
         }
         case ADDRESS_INDIRECT: {
-            uint16_t indirect_addr = read16(cpu, cpu->pc++);
-            cpu->pc++;
+            uint16_t indirect_addr = read16(cpu, cpu->pc);
+            cpu->pc += 2;
             uint16_t addr = read16(cpu, indirect_addr);
             return read8(cpu, addr);
         }
