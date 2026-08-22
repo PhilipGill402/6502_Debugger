@@ -1,14 +1,6 @@
 #include "instructions/functions.h"
 #include "helpers.h"
 
-#include <stdio.h>
-
-static void print_binary(uint8_t val) {
-    for (int i = 7; i >= 0; --i)
-        printf("%d", (val >> i) & 1);
-    printf("\n");
-}
-
 void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     cpu->pc++;
