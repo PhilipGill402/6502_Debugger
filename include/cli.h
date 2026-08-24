@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include "cpu.h"
+#include "instructions/instructions.h"
+#include "instructions/tables.h"
 
 #define INPUT_SIZE  1024
 #define MAX_ARGS    16

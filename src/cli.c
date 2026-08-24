@@ -1,5 +1,7 @@
 #include "cli.h"
+#include "helpers.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
@@ -10,7 +12,31 @@ static void print_binary(uint8_t val) {
     printf("\n");
 }
 
-static void cmd_load(cpu_t* cpu, int8_t argc, char** argv);
+static void cmd_load(cpu_t* cpu, int8_t argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "help: %s <path>\n", argv[0]);
+        return;
+    }
+    
+    errno = 0;
+    FILE* file = fopen(argv[1], "rb");
+    if (!file) {
+        perror("fopen");
+        return;
+    } 
+
+    uint32_t bytes_read;
+    uint16_t addr = read16(cpu, RESET_VECTOR);
+    uint8_t buffer[1024];
+
+    do {
+        bytes_read = fread(buffer, sizeof(uint8_t), 1024, file);
+        memcpy(&cpu->mem[addr], buffer, bytes_read);
+        addr += bytes_read;
+    } while (bytes_read == 1024);
+
+    fclose(file);
+}
 
 static void cmd_regs(cpu_t* cpu, int8_t argc, char** argv) {
     (void)argc;
@@ -30,6 +56,20 @@ static void cmd_status(cpu_t* cpu, int8_t argc, char** argv) {
 }
 
 static void cmd_mem(cpu_t* cpu, int8_t argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "help: %s <address>\n", argv[0]);
+        return;
+    }
+    
+    char* end;
+    uint16_t addr = (uint16_t)strtol(argv[1], &end, 0);
+
+    if (*end != '\0') {
+        fprintf(stderr, "help: %s <address>\n", argv[0]);
+        return;
+    }
+
+    printf("0x%x\n", cpu->mem[addr]);
 }
 
 static void cmd_reset(cpu_t* cpu, int8_t argc, char** argv) {
@@ -39,14 +79,34 @@ static void cmd_reset(cpu_t* cpu, int8_t argc, char** argv) {
     cpu_reset(cpu);
 }
 
+static void cmd_step(cpu_t* cpu, int8_t argc, char** argv) {
+    uint32_t steps = 1;
+
+    if (argc > 1) {
+        char* end; 
+        steps = (uint32_t)strtol(argv[1], &end, 0);
+
+        if (*end != '\0') {
+            fprintf(stderr, "help: %s [steps]\n", argv[0]);
+            return;
+        }
+    }
+
+    for (uint32_t step = 0; step < steps; ++step) {
+        instruction_t ins = get_instruction(cpu);
+        ins.execute(&ins, cpu, instruction_addressing_mode[ins.opcode]);
+    }
+}
+
 command_t commands[] = {
     //{ "run",   cmd_run   },
-    //{ "step",  cmd_step  },
+    { "step",  cmd_step  },
     { "regs",  cmd_regs  },
     { "mem",   cmd_mem   },
     //{ "write", cmd_write },
     { "reset", cmd_reset },
     { "status", cmd_status },
+    { "load", cmd_load },
 };
 
 int8_t cli_run(cpu_t* cpu) {
@@ -76,7 +136,7 @@ int8_t cli_run(cpu_t* cpu) {
             token = strtok(NULL, " ");
         }
         
-        // dispatch command
+        // dispatch commands
         if (strcmp(buffer, "exit") == 0)
             break;
         
@@ -87,5 +147,7 @@ int8_t cli_run(cpu_t* cpu) {
 
         memset(buffer, 0, sizeof(buffer));
     }
+
+    return 0;
 }
 

@@ -10,8 +10,7 @@ int main() {
         return -1;
     
     // hard coding reset vectors
-    write8(&cpu, 0xFFFC, 0x80);
-    write8(&cpu, 0xFFFD, 0x00);
+    write16(&cpu, RESET_VECTOR, 0x8000);
 
     cpu_reset(&cpu);
     
