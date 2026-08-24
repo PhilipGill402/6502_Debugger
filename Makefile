@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -std=c11 -Iinclude -Itest
 SRC_DIR = src
 TEST_DIR = test
 OBJ_DIR = build
-TARGET = emu
+TARGET = 6502_debug
 
 # Find all .c files recursively
 
