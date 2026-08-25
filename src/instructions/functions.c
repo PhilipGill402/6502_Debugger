@@ -3,7 +3,6 @@
 
 void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint8_t value = get_value(cpu, mode);
     uint8_t carry = (cpu->status & CARRY) ? 1 : 0;
@@ -22,7 +21,6 @@ void adc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void and(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint8_t value = get_value(cpu, mode);
     cpu->a = cpu->a & value;
@@ -33,7 +31,6 @@ void and(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint8_t value;
     uint16_t addr;
@@ -61,7 +58,6 @@ void asl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bcc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // carry is not clear
     if (test_flag(cpu, CARRY)) {
@@ -75,7 +71,6 @@ void bcc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bcs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // carry is clear
     if (!test_flag(cpu, CARRY)) {
@@ -89,7 +84,6 @@ void bcs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void beq(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // zero is clear 
     if (!test_flag(cpu, ZERO)) {
@@ -103,7 +97,6 @@ void beq(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bit(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint8_t value = get_value(cpu, mode);
     uint8_t result = cpu->a & value;
@@ -115,7 +108,6 @@ void bit(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bmi(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // negative is clear
     if (!test_flag(cpu, NEGATIVE))
@@ -127,7 +119,6 @@ void bmi(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bne(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // zero is not clear
     if (test_flag(cpu, ZERO))
@@ -139,7 +130,6 @@ void bne(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bpl(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // negative is not clear
     if (test_flag(cpu, NEGATIVE))
@@ -160,7 +150,6 @@ void brk(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bvc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // overflow is not clear
     if (test_flag(cpu, OVERFLOW))
@@ -172,7 +161,6 @@ void bvc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void bvs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     // overflow is clear
     if (!test_flag(cpu, OVERFLOW))
@@ -184,34 +172,29 @@ void bvs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void clc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     set_flag(cpu, CARRY, 0);
 }
 
 void cld(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     set_flag(cpu, DECIMAL, 0);
 }
 void cli(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     set_flag(cpu, INTERRUPT, 0);
 }
 
 void clv(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     set_flag(cpu, OVERFLOW, 0);
 }
 
 void cmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint8_t value = get_value(cpu, mode);
 
@@ -222,7 +205,6 @@ void cmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void cpx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint8_t value = get_value(cpu, mode);
 
@@ -233,7 +215,6 @@ void cpx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void cpy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint8_t value = get_value(cpu, mode);
 
@@ -244,7 +225,6 @@ void cpy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void dec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint16_t addr = get_effective_address(cpu, mode);
     uint8_t result = read8(cpu, addr) - 1;
@@ -256,7 +236,6 @@ void dec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void dex(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->x--;
 
@@ -266,7 +245,6 @@ void dex(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void dey(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->y--;
 
@@ -276,7 +254,6 @@ void dey(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void eor(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint16_t addr = get_effective_address(cpu, mode);
     uint8_t value;
@@ -295,7 +272,6 @@ void eor(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void inc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint16_t addr = get_effective_address(cpu, mode);
     uint8_t result = read8(cpu, addr) + 1;
@@ -307,7 +283,6 @@ void inc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void inx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->x++;
 
@@ -317,7 +292,6 @@ void inx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void iny(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->y++;
 
@@ -327,14 +301,12 @@ void iny(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void jmp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->pc = get_effective_address(cpu, mode);
 }
 
 void jsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint16_t addr = get_effective_address(cpu, mode);
     push16(cpu, cpu->pc - 1);
@@ -344,7 +316,6 @@ void jsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void lda(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
      
     cpu->a = get_value(cpu, mode);
 
@@ -354,7 +325,6 @@ void lda(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void ldx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     cpu->x = get_value(cpu, mode);
 
@@ -364,7 +334,6 @@ void ldx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void ldy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->x = get_value(cpu, mode);
 
@@ -374,7 +343,6 @@ void ldy(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void lsr(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
     
     uint16_t addr = get_effective_address(cpu, mode);
     uint8_t preshift;
@@ -399,12 +367,10 @@ void nop(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
     (void)mode;
 
-    cpu->pc++;
 }
 
 void ora(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint8_t value = get_value(cpu, mode);
     cpu->a = cpu->a | value;
@@ -415,21 +381,18 @@ void ora(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void pha(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     push8(cpu, cpu->a);
 }
 
 void php(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     push8(cpu, cpu->status);
 }
 
 void pla(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->a = pull8(cpu);
 
@@ -439,14 +402,12 @@ void pla(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void plp(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->status = pull8(cpu);
 }
 
 void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint16_t addr = get_effective_address(cpu, mode);
     uint8_t value;
@@ -474,7 +435,6 @@ void rol(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint16_t addr = get_effective_address(cpu, mode);
     uint8_t value;
@@ -502,7 +462,6 @@ void ror(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void rti(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint8_t status = pull8(cpu);
     uint16_t pc = pull16(cpu);
@@ -513,7 +472,6 @@ void rti(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void rts(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint8_t status = pull8(cpu);
     uint16_t pc = pull16(cpu);
@@ -524,7 +482,6 @@ void rts(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void sbc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint8_t value = get_value(cpu, mode);
     uint8_t borrow = test_flag(cpu, CARRY) ? 0: 1;
@@ -543,28 +500,24 @@ void sbc(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void sec(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     set_flag(cpu, CARRY, 1);
 }
 
 void sed(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     set_flag(cpu, DECIMAL, 1);
 }
 
 void sei(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     set_flag(cpu, INTERRUPT, 1);
 }
 
 void sta(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint16_t addr = get_effective_address(cpu, mode);
     write8(cpu, addr, cpu->a);
@@ -572,7 +525,6 @@ void sta(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void stx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint16_t addr = get_effective_address(cpu, mode);
     write8(cpu, addr, cpu->x);
@@ -580,7 +532,6 @@ void stx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void sty(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     uint16_t addr = get_effective_address(cpu, mode);
     write8(cpu, addr, cpu->y);
@@ -588,7 +539,6 @@ void sty(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void tax(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->x = cpu->a;
 
@@ -598,7 +548,6 @@ void tax(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void tay(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->y = cpu->a;
 
@@ -608,7 +557,6 @@ void tay(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void tsx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->x = cpu->sp;
 
@@ -618,7 +566,6 @@ void tsx(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void txa(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->a = cpu->x;
 
@@ -628,14 +575,12 @@ void txa(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
 
 void txs(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->sp = cpu->x;
 }
 
 void tya(instruction_t* self, cpu_t* cpu, addressing_mode_t mode) {
     (void)self;
-    cpu->pc++;
 
     cpu->a = cpu->y;
 

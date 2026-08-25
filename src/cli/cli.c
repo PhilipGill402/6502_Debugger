@@ -36,9 +36,11 @@ static void cmd_run(cpu_t* cpu, int8_t argc, char** argv) {
             printf("Breakpoint reached at %x\n", cpu->pc);
             return;
         }
-
+            
         cpu_step(cpu);
     }
+
+    printf("Program reached end of memory\n");
 }
 
 static void cmd_load(cpu_t* cpu, int8_t argc, char** argv) {

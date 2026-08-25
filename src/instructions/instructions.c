@@ -16,5 +16,5 @@ instruction_t instruction_init(uint8_t opcode) {
 }
 
 instruction_t get_instruction(cpu_t* cpu) {
-    return instruction_init(cpu->mem[cpu->pc]);
+    return instruction_init(cpu->mem[cpu->pc++]);
 }
