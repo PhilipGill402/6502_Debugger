@@ -80,6 +80,22 @@ Loads a raw binary file into emulated memory beginning at the current reset-vect
 >> load programs/test.bin
 ```
 
+#### `break <address>
+
+Suspends execution of the program at a given address.
+
+```text
+>> break 0x8000
+```
+
+#### `run`
+
+Executes instructions either indefinitely or until a breakpoint is reached.
+
+```text
+>> run
+```
+
 #### `step [count]`
 
 Executes one instruction by default, or multiple instructions if a count is provided.
@@ -144,22 +160,10 @@ For example:
         brk
 ```
 
-assembles to bytes like:
-
-```text
-A9 42 AA E8 00
-```
-
-### Assembling with vasm
+Assemble it was any assembler, I use vasm here:
 
 ```bash
 vasm6502_oldstyle -Fbin program.s -o program.bin
-```
-
-Inspect the output:
-
-```bash
-hexdump -C program.bin
 ```
 
 Then load it:
@@ -248,61 +252,16 @@ They verify behavior such as:
 - Register transfers
 - Memory reads and writes
 
-## Design
-
-Instruction execution is separated into instruction dispatch and addressing-mode handling.
-
-```text
-opcode
-   |
-   v
-instruction table
-   |
-   +----> instruction implementation
-   |
-   +----> addressing mode table
-```
-
-For example:
-
-```text
-A9 42
-```
-
-is:
-
-```asm
-LDA #$42
-```
-
-while:
-
-```text
-A5 42
-```
-
-is:
-
-```asm
-LDA $42
-```
-
-Both execute `LDA`, but they retrieve their operand differently.
-
 ## Current Status
 
 The project is under active development.
 
 Planned debugger features include:
 
-- Continuous `run` command
 - Memory write command
-- Breakpoints
 - Improved register display
 - Disassembly
 - Cycle tracking
-- Improved error handling
-- More extensive instruction validation
 
 ## Goals
 
