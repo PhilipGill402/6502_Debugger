@@ -1,5 +1,5 @@
-#ifndef INCLUDE_CLI_H_
-#define INCLUDE_CLI_H_
+#ifndef INCLUDE_CLI_CLI_H_
+#define INCLUDE_CLI_CLI_H_
 
 #include <stdint.h>
 #include "cpu.h"

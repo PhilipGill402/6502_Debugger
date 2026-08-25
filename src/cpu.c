@@ -1,5 +1,6 @@
 #include "cpu.h"
-
+#include "instructions/instructions.h"
+#include "instructions/tables.h"
 #include <stddef.h>
 #include <sys/mman.h>
 #include <errno.h>
@@ -33,4 +34,7 @@ void cpu_reset(cpu_t* cpu) {
     return;
 }
 
-
+void cpu_step(cpu_t* cpu) {
+    instruction_t ins = get_instruction(cpu);
+    ins.execute(&ins, cpu, instruction_addressing_mode[ins.opcode]);
+}

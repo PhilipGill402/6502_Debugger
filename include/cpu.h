@@ -43,5 +43,6 @@ static inline uint8_t test_flag(cpu_t* cpu, uint8_t flag) {
 cpu_t cpu_init();
 void cpu_free(cpu_t* cpu);
 void cpu_reset(cpu_t* cpu);
+void cpu_step(cpu_t* cpu);
 
 #endif

@@ -2,7 +2,7 @@
 #include "helpers.h"
 #include "cpu.h"
 #include "instructions/instructions.h"
-#include "cli.h"
+#include "cli/cli.h"
 
 int main() {
     cpu_t cpu = cpu_init();

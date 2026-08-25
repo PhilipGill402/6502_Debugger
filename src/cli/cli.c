@@ -1,4 +1,5 @@
-#include "cli.h"
+#include "cli/cli.h"
+#include "cli/breakpoint.h"
 #include "helpers.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +11,34 @@ static void print_binary(uint8_t val) {
     for (int i = 7; i >= 0; --i)
         printf("%d", (val >> i) & 1);
     printf("\n");
+}
+
+static void cmd_break(cpu_t* cpu, int8_t argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "help: %s <address>\n", argv[0]);
+        return;
+    }
+    
+    char* end;
+    uint16_t addr = (uint16_t)strtol(argv[1], &end, 0);
+
+    if (*end != '\0') {
+        fprintf(stderr, "help: %s <address>\n", argv[0]);
+        return;
+    }
+
+    add_breakpoint(addr);
+}
+
+static void cmd_run(cpu_t* cpu, int8_t argc, char** argv) {
+    while (1) {
+        if (is_breakpoint(cpu->pc)) {
+            printf("Breakpoint reached at %x\n", cpu->pc);
+            return;
+        }
+
+        cpu_step(cpu);
+    }
 }
 
 static void cmd_load(cpu_t* cpu, int8_t argc, char** argv) {
@@ -92,21 +121,20 @@ static void cmd_step(cpu_t* cpu, int8_t argc, char** argv) {
         }
     }
 
-    for (uint32_t step = 0; step < steps; ++step) {
-        instruction_t ins = get_instruction(cpu);
-        ins.execute(&ins, cpu, instruction_addressing_mode[ins.opcode]);
-    }
+    for (uint32_t step = 0; step < steps; ++step)
+        cpu_step(cpu); 
 }
 
 command_t commands[] = {
-    //{ "run",   cmd_run   },
-    { "step",  cmd_step  },
-    { "regs",  cmd_regs  },
-    { "mem",   cmd_mem   },
+    { "run", cmd_run },
+    { "step", cmd_step },
+    { "regs", cmd_regs },
+    { "mem", cmd_mem },
     //{ "write", cmd_write },
     { "reset", cmd_reset },
     { "status", cmd_status },
     { "load", cmd_load },
+    { "break", cmd_break },
 };
 
 int8_t cli_run(cpu_t* cpu) {
