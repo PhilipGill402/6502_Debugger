@@ -13,6 +13,66 @@ static void print_binary(uint8_t val) {
     printf("\n");
 }
 
+static void cmd_save(cpu_t* cpu, int8_t argc, char** argv) {
+    (void)argc;
+    (void)argv;
+
+    FILE* save_file = fopen("save.dump", "wb");
+
+    fwrite(cpu->mem, sizeof(uint8_t), MEM_SIZE, save_file);
+
+    fclose(save_file);
+}
+
+static void cmd_reload(cpu_t* cpu, int8_t argc, char** argv) {
+    (void)argc;
+    (void)argv;
+
+    FILE* save_file = fopen("save.dump", "rb");
+
+    fread(cpu->mem, sizeof(uint8_t), MEM_SIZE, save_file);
+    cpu_reset(cpu);
+
+    fclose(save_file);
+}
+
+static void cmd_next(cpu_t* cpu, int8_t argc, char** argv) {
+    uint8_t opcode = read8(cpu, cpu->pc);
+
+    // makes sure current instruction is JSR
+    if (opcode == 0x20) { 
+        // loops while the current instruction is not RTS
+        while (opcode != 0x60) {
+            cpu_step(cpu);
+            opcode = cpu->pc;
+        }
+    }
+}
+
+static void cmd_write(cpu_t* cpu, int8_t argc, char** argv) {
+    if (argc < 3) {
+        fprintf(stderr, "help: %s <address> <value>\n", argv[0]);
+        return;
+    }
+
+    char* end;
+    uint16_t addr = (uint16_t)strtol(argv[1], &end, 0);
+
+    if (*end != '\0') {
+        fprintf(stderr, "help: %s <address> <value>\n", argv[0]);
+        return;
+    }
+
+    uint8_t value = (uint8_t)strtol(argv[2], &end, 0);
+
+    if (*end != '\0') {
+        fprintf(stderr, "help: %s <address> <value>\n", argv[0]);
+        return;
+    }
+
+    write8(cpu, addr, value);
+}
+
 static void cmd_break(cpu_t* cpu, int8_t argc, char** argv) {
     if (argc < 2) {
         fprintf(stderr, "help: %s <address>\n", argv[0]);
@@ -39,8 +99,6 @@ static void cmd_run(cpu_t* cpu, int8_t argc, char** argv) {
             
         cpu_step(cpu);
     }
-
-    printf("Program reached end of memory\n");
 }
 
 static void cmd_load(cpu_t* cpu, int8_t argc, char** argv) {
@@ -132,11 +190,14 @@ command_t commands[] = {
     { "step", cmd_step },
     { "regs", cmd_regs },
     { "mem", cmd_mem },
-    //{ "write", cmd_write },
+    { "write", cmd_write },
     { "reset", cmd_reset },
     { "status", cmd_status },
     { "load", cmd_load },
     { "break", cmd_break },
+    { "next", cmd_next },
+    { "save", cmd_save },
+    { "reload", cmd_reload },
 };
 
 int8_t cli_run(cpu_t* cpu) {
@@ -170,10 +231,18 @@ int8_t cli_run(cpu_t* cpu) {
         if (strcmp(buffer, "exit") == 0)
             break;
         
+        uint8_t found_function = 0;
         for (uint32_t i = 0; i < sizeof(commands) / sizeof(command_t); i++) {
-            if (strcmp(buffer, commands[i].name) == 0)
+            if (strcmp(buffer, commands[i].name) == 0) {
                 commands[i].function(cpu, argc, argv);
+                found_function = 1;
+                break;
+            }
         }
+
+        if (!found_function)
+            printf("Did not recognize command: %s\n", argv[0]);
+
 
         memset(buffer, 0, sizeof(buffer));
     }
