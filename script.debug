@@ -1,0 +1,3 @@
+load test/test_asm.bin
+step 4
+regs
