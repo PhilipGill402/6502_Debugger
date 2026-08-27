@@ -1,5 +1,6 @@
 #include "cli/cli.h"
 #include "cli/breakpoint.h"
+#include "cli/disassembler.h"
 #include "helpers.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,40 @@ static void print_binary(uint8_t val) {
     for (int i = 7; i >= 0; --i)
         printf("%d", (val >> i) & 1);
     printf("\n");
+}
+
+static void cmd_disassemble(cpu_t* cpu, int8_t argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "help: %s <address> [lines]\n", argv[0]);
+        return;
+    }
+    
+    char* end;
+    uint16_t addr = (uint16_t)strtol(argv[1], &end, 0);
+
+    if (*end != '\0') {
+        fprintf(stderr, "help: %s <address> [lines]\n", argv[0]);
+        return;
+    }
+
+    uint16_t lines = 1;
+    if (argc >= 3) {
+        char* end;
+        lines = (uint16_t)strtol(argv[2], &end, 0);
+
+        if (*end != '\0') {
+            fprintf(stderr, "help: %s <address> [lines]\n", argv[0]);
+            return;
+        }
+    }
+
+    for (uint16_t i = 0; i < lines; ++i) {
+        char* line = disassemble_line(cpu, &addr);
+        printf("%s\n", line); 
+        free(line);
+    }
+    
+    
 }
 
 static void cmd_save(cpu_t* cpu, int8_t argc, char** argv) {
@@ -37,6 +72,9 @@ static void cmd_reload(cpu_t* cpu, int8_t argc, char** argv) {
 }
 
 static void cmd_next(cpu_t* cpu, int8_t argc, char** argv) {
+    (void)argc;
+    (void)argv;
+
     uint8_t opcode = read8(cpu, cpu->pc);
 
     // makes sure current instruction is JSR
@@ -93,7 +131,11 @@ static void cmd_break(cpu_t* cpu, int8_t argc, char** argv) {
 static void cmd_run(cpu_t* cpu, int8_t argc, char** argv) {
     while (1) {
         if (is_breakpoint(cpu->pc)) {
-            printf("Breakpoint reached at %x\n", cpu->pc);
+            printf("Breakpoint reached\n");
+            uint16_t addr = cpu->pc;
+            char* line = disassemble_line(cpu, &addr);
+            printf("%s\n", line);
+            free(line);
             return;
         }
             
@@ -131,9 +173,9 @@ static void cmd_regs(cpu_t* cpu, int8_t argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    printf("Register A: %x\n", cpu->a);
-    printf("Register X: %x\n", cpu->x);
-    printf("Register Y: %x\n", cpu->y);
+    printf("Register A: %d\n", cpu->a);
+    printf("Register X: %d\n", cpu->x);
+    printf("Register Y: %d\n", cpu->y);
 }
 
 static void cmd_status(cpu_t* cpu, int8_t argc, char** argv) {
@@ -181,8 +223,14 @@ static void cmd_step(cpu_t* cpu, int8_t argc, char** argv) {
         }
     }
 
-    for (uint32_t step = 0; step < steps; ++step)
-        cpu_step(cpu); 
+    for (uint32_t step = 0; step < steps; ++step) {
+        uint16_t addr = cpu->pc;
+        char* line = disassemble_line(cpu, &addr);
+        printf("%s\n", line);
+        free(line);
+        cpu_step(cpu);
+    }
+         
 }
 
 command_t commands[] = {
@@ -198,6 +246,7 @@ command_t commands[] = {
     { "next", cmd_next },
     { "save", cmd_save },
     { "reload", cmd_reload },
+    { "disassemble", cmd_disassemble },
 };
 
 int8_t cli_run(cpu_t* cpu) {

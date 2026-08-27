@@ -13,6 +13,6 @@ extern uint8_t instruction_cycles[256];
 extern uint8_t instruction_bytes[256];
 extern instruction_fn instruction_table[256];
 extern addressing_mode_t instruction_addressing_mode[256];
-
+extern const char* instruction_names[256];
 #endif
 
