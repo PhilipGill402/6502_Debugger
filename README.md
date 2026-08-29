@@ -4,8 +4,6 @@ A command-line NMOS 6502 emulator and debugger written in C.
 
 This project implements the 6502 CPU from the instruction level upward and provides an interactive debugger for loading raw 6502 binaries, stepping through execution, inspecting CPU state, disassembling code, and debugging programs with breakpoints, watchpoints, scripts, and runtime tools.
 
-> **Status:** Active development.
-
 ## Features
 
 ### CPU Emulation
