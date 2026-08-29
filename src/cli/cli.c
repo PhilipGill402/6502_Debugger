@@ -1,6 +1,7 @@
 #include "cli/cli.h"
 #include "cli/breakpoint.h"
 #include "cli/disassembler.h"
+#include "cli/watchlist.h"
 #include "helpers.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +23,7 @@ static void cmd_save(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_reload(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_disassemble(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_script(cpu_t* cpu, int8_t argc, char** argv);
+static void cmd_watch(cpu_t* cpu, int8_t argc, char** argv);
 
 command_t commands[] = {
     { "run", cmd_run },
@@ -38,6 +40,7 @@ command_t commands[] = {
     { "reload", cmd_reload },
     { "disassemble", cmd_disassemble },
     { "script", cmd_script },
+    { "watch", cmd_watch },
 };
 
 static void print_binary(uint8_t val) {
@@ -75,6 +78,23 @@ static uint8_t dispatch_command(cpu_t* cpu, char* buffer) {
             printf("Did not recognize command: %s\n", argv[0]);
 
         return 1;
+}
+
+static void cmd_watch(cpu_t* cpu, int8_t argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "help: %s <address>\n", argv[0]);
+        return;
+    }
+
+    char* end;
+    uint16_t addr = (uint16_t)strtol(argv[1], &end, 0);
+
+    if (*end != '\0') {
+        fprintf(stderr, "help: %s <address> [lines]\n", argv[0]);
+        return;
+    }
+
+    watch_point_add(addr);
 }
 
 static void cmd_script(cpu_t* cpu, int8_t argc, char** argv) {
@@ -225,6 +245,18 @@ static void cmd_run(cpu_t* cpu, int8_t argc, char** argv) {
             char* line = disassemble_line(cpu, &addr);
             printf("%s\n", line);
             free(line);
+            return;
+        } 
+
+        int32_t addr = watch_point_is_active();
+        if (addr != -1) {
+            printf("Watch Point activated\n");
+            watch_point_reset(addr);
+            uint16_t pc = cpu->previous_instruction;
+            char* line = disassemble_line(cpu, &pc);
+            printf("%s\n", line);
+            free(line);
+
             return;
         }
             

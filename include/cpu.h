@@ -27,6 +27,9 @@ typedef struct {
     
     // memory
     uint8_t* mem;
+
+    // debug info
+    uint16_t previous_instruction;
 } cpu_t;
 
 static inline void set_flag(cpu_t* cpu, uint8_t flag, uint8_t value) {

@@ -35,6 +35,7 @@ void cpu_reset(cpu_t* cpu) {
 }
 
 void cpu_step(cpu_t* cpu) {
+    cpu->previous_instruction = cpu->pc; 
     instruction_t ins = get_instruction(cpu);
     ins.execute(&ins, cpu, instruction_addressing_mode[ins.opcode]);
 }
