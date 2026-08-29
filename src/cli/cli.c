@@ -11,11 +11,10 @@
 
 static void cmd_run(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_step(cpu_t* cpu, int8_t argc, char** argv);
-static void cmd_regs(cpu_t* cpu, int8_t argc, char** argv);
+static void cmd_state(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_mem(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_write(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_reset(cpu_t* cpu, int8_t argc, char** argv);
-static void cmd_status(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_load(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_break(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_next(cpu_t* cpu, int8_t argc, char** argv);
@@ -29,11 +28,10 @@ static void cmd_stack(cpu_t* cpu, int8_t argc, char** argv);
 command_t commands[] = {
     { "run", cmd_run },
     { "step", cmd_step },
-    { "regs", cmd_regs },
+    { "state", cmd_state },
     { "mem", cmd_mem },
     { "write", cmd_write },
     { "reset", cmd_reset },
-    { "status", cmd_status },
     { "load", cmd_load },
     { "break", cmd_break },
     { "next", cmd_next },
@@ -330,21 +328,24 @@ static void cmd_load(cpu_t* cpu, int8_t argc, char** argv) {
     printf("Loaded %s at 0x%04x\n", argv[1], start_addr);
 }
 
-static void cmd_regs(cpu_t* cpu, int8_t argc, char** argv) {
+static void cmd_state(cpu_t* cpu, int8_t argc, char** argv) {
     (void)argc;
     (void)argv;
 
-    printf("Register A: %d\n", cpu->a);
-    printf("Register X: %d\n", cpu->x);
-    printf("Register Y: %d\n", cpu->y);
-}
+    printf("PC: 0x%04x\t", cpu->pc);
+    printf("SP: 0x%02x\n", cpu->sp);
 
-static void cmd_status(cpu_t* cpu, int8_t argc, char** argv) {
-    (void)argc;
-    (void)argv;
+    printf("A: 0x%04x\t", cpu->a);
+    printf("X: 0x%04x\t", cpu->x);
+    printf("Y: 0x%04x\n", cpu->y);
 
-    printf("Status: ");
+    printf("Status: -NVBDIZC\n\t");
     print_binary(cpu->status);
+
+    uint16_t addr = cpu->pc;
+    char* line = disassemble_line(cpu, &addr);
+    printf("%s\n", line);
+    free(line);
 }
 
 static void cmd_mem(cpu_t* cpu, int8_t argc, char** argv) {
