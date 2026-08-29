@@ -24,6 +24,7 @@ static void cmd_reload(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_disassemble(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_script(cpu_t* cpu, int8_t argc, char** argv);
 static void cmd_watch(cpu_t* cpu, int8_t argc, char** argv);
+static void cmd_stack(cpu_t* cpu, int8_t argc, char** argv);
 
 command_t commands[] = {
     { "run", cmd_run },
@@ -41,6 +42,7 @@ command_t commands[] = {
     { "disassemble", cmd_disassemble },
     { "script", cmd_script },
     { "watch", cmd_watch },
+    { "stack", cmd_stack },
 };
 
 static void print_binary(uint8_t val) {
@@ -78,6 +80,28 @@ static uint8_t dispatch_command(cpu_t* cpu, char* buffer) {
             printf("Did not recognize command: %s\n", argv[0]);
 
         return 1;
+}
+
+static void cmd_stack(cpu_t* cpu, int8_t argc, char** argv) {
+    uint8_t values = 5; // start at printing a default of 5 stack values
+
+    if (argc >= 2) {
+        char* end;
+        values = (uint8_t)strtol(argv[1], &end, 0);
+
+        if (*end != '\0') {
+            fprintf(stderr, "help: %s [num values]\n", argv[0]);
+            return;
+        }
+    }
+
+    printf("SP: 0x%02x\n", cpu->sp);
+
+    for (uint8_t i = 0; i < values; ++i) {
+        uint8_t offset = cpu->sp + i;
+        uint8_t value = cpu->mem[STACK_START + offset];
+        printf("0x%04x: 0x%02x\n", STACK_START + offset, value);
+    }
 }
 
 static void cmd_watch(cpu_t* cpu, int8_t argc, char** argv) {

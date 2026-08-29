@@ -30,6 +30,7 @@ void cpu_reset(cpu_t* cpu) {
     uint8_t high = cpu->mem[RESET_VECTOR + 1];
 
     cpu->pc = (high << 8) | low;
+    cpu->sp = 0xFD;
 
     return;
 }
